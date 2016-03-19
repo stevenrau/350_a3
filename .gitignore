@@ -1,0 +1,15 @@
+# Ignore and design documents
+*.txt
+
+# Ignore the image directories
+artwork/*
+artist_thumbnail/*
+
+# Make exceptions for the images used in the DB setup
+!artist_thumbnail/default.png
+!artist_thumbnail/Adele.jpg
+!artist_thumbnail/John\ Denver.jpg
+!artist_thumbnail/Taylor\ Swift.jpg
+!artwork/To\ Pimp\ a\ Butterfly.png
+!artwork/1989.jpg
+!artwork/default.png
