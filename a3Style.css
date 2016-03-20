@@ -1,0 +1,247 @@
+/* Top-level body style */
+body
+{
+    font-family: "Arial", Gadget, sans-serif;
+    font-size: 20px;
+    color: #ffffff;
+    margin:15px;
+    padding: 15px;
+    padding-top: 0px;  /* Keep the header tight to the top */
+    background-color: #1a1a1a;
+}
+
+/*======================================================= */
+/* Start of header CSS */
+/*======================================================= */
+header
+{
+    text-align:center;
+    border-radius: 1em;
+    background:#0d0d0d;
+    border:5px solid #CCC;
+    width:95%;
+    margin:2% auto;
+    padding-bottom: 15px;
+    padding
+}
+
+/* The logo in the header */
+#header_logo
+{
+    border-radius: 1em;
+    padding: 2%;
+    vertical-align: middle;
+    display:inline;
+}
+
+/* The title in the header */
+#site_title
+{
+    padding-left:8%;
+    padding-right:8%;
+    font-size:4vw;
+    vertical-align: middle;
+    text-align:center;
+    display:inline-block;
+    color:#ffffff;
+}
+
+.navigation
+{
+    font-weight: bold;
+    padding: 10px;
+    text-decoration: none;
+    color:#b3b3b3;
+}
+
+/* The nav bar in the header */
+.navigation:hover
+{
+    color:#89de7a;
+}
+
+nav
+{
+    font-size:3vw;
+    text-align:center;
+    margin:1%;
+    color:#ffffff;
+}
+
+/*======================================================= */
+/* Site-wide CSS */
+/*======================================================= */
+
+
+.operation_header
+{
+    margin: 0px;
+    padding: 0px;
+}
+
+/* The entire operation list */
+#operation_list
+{
+    padding-top: 6px;
+    margin-top: 15px;
+}
+
+/* Each item in the operation list */
+.operation_list
+{
+    padding-bottom: 15px;
+    text-decoration: none;
+    color:#b3b3b3;
+}
+
+/* The nav bar in the header */
+.operation_list:hover
+{
+    color:#89de7a;
+}
+
+/*======================================================= */
+/* Start of home content CSS */
+/*======================================================= */
+
+#home_main
+{
+    font-size:1.5vw;
+    margin:2% auto;
+    width:95%;
+}
+
+/* Keep the image at native resolution until it no longer fits on the page */
+@media only screen and (max-width: 475px)
+{
+    #content_pic
+    {
+        width:100%;
+        height:auto;
+    }
+}
+
+/* Handle retina displays: Load a higher res image */
+@media
+(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)
+{
+    #content_pic
+    {
+        content: url("http://lorempixel.com/800/600/")
+    }
+}
+
+/*======================================================= */
+/* Start of artists page content CSS */
+/*======================================================= */
+
+#artists_main
+{
+    font-size:1.5vw;
+    margin:2% auto;
+    width:95%;
+}
+
+ul
+{
+    text-decoration: none;
+    color:#b3b3b3;
+}
+
+#artist_list
+{
+    text-align:center;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.artist_list_header
+{
+    font-weight: bold;
+}
+
+.artistRow
+{
+    margin: 50px;
+}
+
+.artistImg
+{
+    width: 40%;
+    height:auto;
+}
+
+.imgCol
+{
+    width: 200px;
+}
+
+/*======================================================= */
+/* Start of albums page content CSS */
+/*======================================================= */
+
+
+#album_list
+{
+    text-align:center;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+album_list_header
+{
+    font-weight: bold;
+}
+
+.albumRow
+{
+    margin: 50px;
+}
+
+.albumImg
+{
+    width: 40%;
+    height:auto;
+}
+
+
+/*======================================================= */
+/* Start of tracks page content CSS */
+/*======================================================= */
+
+
+#track_list
+{
+    text-align:center;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+track_list_header
+{
+    font-weight: bold;
+}
+
+.trackRow
+{
+    margin: 50px;
+}
+
+
+
+
+/*======================================================= */
+/* Start of footer CSS */
+/*======================================================= */
+
+footer
+{
+    text-align:center;
+    border-radius: 1em;
+    background:#0d0d0d;
+    border:5px solid #CCC;
+    width:95%;
+    margin:2% auto;
+    padding: 10px;
+}
+
