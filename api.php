@@ -1,7 +1,7 @@
 <?php
 
     /* --------------------------------------------------------------------------------------------
-     * File helper functions
+     * Constants and datatypes
      * ------------------------------------------------------------------------------------------*/
 
     // HTTP error code for a bad client request
@@ -14,6 +14,15 @@
         const ARTISTS_TABLE = 1;
         const ALBUMS_TABLE = 2;
         const TRACKS_TABLE = 3;
+    }
+
+    // A class to act as a JSON struct that will be returned to indicate the status of a request
+    class RequestStatus
+    {
+        public $status;       // Status of the request (Success or failure)
+        public $action;       // The action that was performed
+        public $id_affected;  // ID of the entry affected by the operation
+        public $comment;      // Any additional comments
     }
 
     /* --------------------------------------------------------------------------------------------
@@ -76,6 +85,7 @@
         return $id;
     }
 
+
     /* --------------------------------------------------------------------------------------------
      * Main code
      * ------------------------------------------------------------------------------------------*/
@@ -111,19 +121,29 @@
     // Get the table ID from the route so that we know how to handle the URI request
     $table = getTableId($routes[0]);
 
+    // Grab any potential input
+    $input = json_decode(file_get_contents('php://input'),true);
+
     // Go to the proper helper function depending on what table/controller we need to
     // interface with
     switch ($table)
     {
         case TableIds::ARTISTS_TABLE:
-            echo 'artists table';
+            $artistsHandler = new Artists_Controller();
+            echo ($artistsHandler->processQuery($routes, $method, $input));
+
             break;
+
         case TableIds::ALBUMS_TABLE:
-            echo 'albums table';
+            $albumsHandler = new Albums_Controller();
+            echo ($albumsHandler->processQuery($routes, $method, $input));
             break;
+
         case TableIds::TRACKS_TABLE:
-            echo 'tracks table';
+            $tracksHandler = new Tracks_Controller();
+            echo ($tracksHandler->processQuery($routes, $method, $input));
             break;
+
         default:
             http_response_code($BAD_REQUEST_ERR);
             die('Bad API request: Table "' . $routes[0] . '" does not exist.');

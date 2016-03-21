@@ -16,7 +16,7 @@
 <html lang="en">
     <head>
         <link rel="stylesheet" type="text/css" href="/350_a3/a3Style.css">
-        <title>Albums</title>
+        <title>Tracks</title>
     </head>
 
     <body>

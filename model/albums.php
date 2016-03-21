@@ -33,8 +33,15 @@
                $sql = 'INSERT INTO albums(title, artist_id) VALUES (\'' . $title . '\', ' . $artistId . ')';
                $db->query($sql);
 
-               // Return the newly added ID
-               return $db->insert_id;
+               $newId = $db->insert_id;
+
+               // Return the newly added ID or -1 if something went wrong
+               if ($newId <= 0)
+               {
+                   return -1;
+               }
+
+               return $newId;
           }
 
            /*
@@ -58,6 +65,12 @@
           {
                $db = Database::getInstance();
                $req = $db->query('SELECT * from albums WHERE id = ' . $albumId);
+
+              // If the allbum doesn't exist, return an empty album
+              if ($req->num_rows == 0)
+               {
+                    return new Album(null, null, null, null, null);
+               }
 
                $album = $req->fetch_assoc();
 

@@ -6,6 +6,10 @@ include_once(realpath(dirname(__FILE__)) . "/../model/artists.php");
 
 class Tracks_Controller
 {
+    /* --------------------------------------------------------------------------------------------
+     * Main site controller functions
+     * ------------------------------------------------------------------------------------------*/
+
      /**
       * Get a list of all tracks
       */
@@ -134,4 +138,89 @@ class Tracks_Controller
           }
 
      }
+
+    /* --------------------------------------------------------------------------------------------
+     * API controller functions
+     * ------------------------------------------------------------------------------------------*/
+
+    /**
+     * Handles a GET request
+     */
+    function processGet($routes)
+    {
+        // If an ID was provided, get that track
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            $id = $routes[1];
+
+            return json_encode(Track::getTrack($id));
+        }
+        // Otherwise get all tracks
+        else
+        {
+            return json_encode(Track::getTracksList());
+        }
+    }
+
+    /**
+     * Handles a POST request
+     */
+    function processPost($input)
+    {
+
+    }
+
+    /**
+     * Handles a PUT request
+     */
+    function processPut($routes, $input)
+    {
+
+    }
+
+    /**
+     * Handles a DELETE request
+     */
+    function processDelete($routes)
+    {
+
+    }
+
+    /**
+     * Processes an API query
+     *
+     * @param[in] routes  The URI route, broken into an array
+     * @param[in] method  HTTP method
+     * @param[in] input   Any potential input parameters
+     */
+    function processQuery($routes, $method, $input)
+    {
+        switch($method)
+        {
+            case 'GET':
+                return $this->processGet($routes);
+                break;
+
+            case 'POST':
+                return $this->processPost($input);
+                break;
+
+            case 'PUT':
+                return $this->processPut($routes, $input);
+                break;
+
+            case 'DELETE':
+                return $this->processDelete($routes);
+                break;
+
+            default:
+                $reqStatus = new RequestStatus();
+                $reqStatus->action = $method;
+                $reqStatus->id_affected = -1;
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Requested HTTP method not supported';
+
+                return json_encode($reqStatus);
+        }
+    }
 }

@@ -5,6 +5,10 @@ include_once(realpath(dirname(__FILE__)) . "/../model/artists.php");
 
 class Albums_Controller
 {
+    /* --------------------------------------------------------------------------------------------
+     * Main site controller functions
+     * ------------------------------------------------------------------------------------------*/
+
     /**
       * Get a list of all albums
       */
@@ -196,4 +200,169 @@ class Albums_Controller
                     </script>";
           }
      }
+
+    /* --------------------------------------------------------------------------------------------
+     * API controller functions
+     * ------------------------------------------------------------------------------------------*/
+
+    /**
+     * Handles a GET request
+     */
+    function processGet($routes)
+    {
+        // If an ID was provided, get that album
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            $id = $routes[1];
+
+            return json_encode(Album::getAlbum($id));
+        }
+        // Otherwise get all albums
+        else
+        {
+            return json_encode(Album::getAlbumsList());
+        }
+    }
+
+    /**
+     * Handles a POST request
+     */
+    function processPost($input)
+    {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'POST';
+        $reqStatus->id_affected = -1;
+
+        //Make sure a title and artist was provided for the new album
+        if (isset($input["title"]) && isset($input["artist"]) && count($input) == 2)
+        {
+            $title = $input["title"];
+            $artist = $input["artist"];
+
+            // First, check if the artist exists. If not, make a new entry
+            $artistId = Artist::getArtistId($artist);
+            if ($artistId < 0)
+            {
+                $artistId = Artist::addArtist($artist);
+            }
+
+            // Then add the album
+            $newId = Album::addAlbum($title, $artistId);
+
+            // The new ID will be -1 if there was an error adding the new album
+            if ($newId <= 0)
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Failed to create the new album.';
+            }
+            else
+            {
+                $reqStatus->status = 'Success';
+                $reqStatus->comment = 'Album ' . $newId . ' successfully added.';
+                $reqStatus->id_affected = $newId;
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Expects a title and artist name when creating a new album';
+        }
+
+        return json_encode($reqStatus);
+    }
+
+    /**
+     * Handles a PUT request
+     */
+    function processPut($routes, $input)
+    {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'PUT';
+        $reqStatus->id_affected = -1;
+
+        // Make sure an ID was provided
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            //Then make sure a new title was provided for the artist
+            if (isset($input["new_title"]) && count($input) == 1)
+            {
+                // Grab the new title and album ID provided
+                $newTitle = $input["new_title"];
+                $id = $routes[1];
+                $reqStatus->id_affected = $id;
+
+                // Try to update the albums's name
+                $succ = Album::updateAlbumTitle($id, $newTitle);
+
+                if ($succ)
+                {
+                    $reqStatus->status = 'Success';
+                    $reqStatus->comment = 'Title updated for album '. $id;
+                }
+                else
+                {
+                    $reqStatus->status = 'Failure';
+                    $reqStatus->comment = 'Could not update the title for album ' . $id;
+                }
+            }
+            else
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Only a new_title is expected when updating an album';
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Must provide an ID for the album you wish to update.';
+        }
+
+        return json_encode($reqStatus);
+    }
+
+    /**
+     * Handles a DELETE request
+     */
+    function processDelete($routes)
+    {
+
+    }
+
+    /**
+     * Processes an API query
+     *
+     * @param[in] routes  The URI route, broken into an array
+     * @param[in] method  HTTP method
+     * @param[in] input   Any potential input parameters
+     */
+    function processQuery($routes, $method, $input)
+    {
+        switch($method)
+        {
+            case 'GET':
+                return $this->processGet($routes);
+                break;
+
+            case 'POST':
+                return $this->processPost($input);
+                break;
+
+            case 'PUT':
+                return $this->processPut($routes, $input);
+                break;
+
+            case 'DELETE':
+                return $this->processDelete($routes);
+                break;
+
+            default:
+                $reqStatus = new RequestStatus();
+                $reqStatus->action = $method;
+                $reqStatus->id_affected = -1;
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Requested HTTP method not supported';
+
+                return json_encode($reqStatus);
+        }
+    }
 }

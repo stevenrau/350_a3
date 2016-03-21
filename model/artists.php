@@ -20,7 +20,7 @@
            * Adds a new artist with a given name. The thumbnail_url will be left at the default
            * value and will have to be set with updateArtistThumbUrl() if required
            *
-           * Returns the ID of the newly created artist
+           * Returns the ID of the newly created artist or -1 if an artist with that name already exists
            */
           public static function addArtist($name)
           {
@@ -51,13 +51,22 @@
            */
           public static function deleteArtist($artistId)
           {
-               $db = Database::getInstance();
+                $db = Database::getInstance();
 
-               $sql = 'DELETE FROM artists WHERE id=' . $artistId;
+                // First check to see if the artist exists
+                $sql = 'SELECT * FROM artists WHERE id=' . $artistId;
+                $req = $db->query($sql);
+                if ($req->num_rows == 0)
+                {
+                    return False;
+                }
 
-               $succ = $db->query($sql);
 
-               return $succ;
+                $sql = 'DELETE FROM artists WHERE id=' . $artistId;
+
+                $succ = $db->query($sql);
+
+                return $succ;
           }
 
 

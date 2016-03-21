@@ -4,6 +4,10 @@ include_once(realpath(dirname(__FILE__)) . "/../model/artists.php");
 
 class Artists_Controller
 {
+    /* --------------------------------------------------------------------------------------------
+     * Main site controller functions
+     * ------------------------------------------------------------------------------------------*/
+
      /**
       * Get a list of all artists
       */
@@ -194,6 +198,192 @@ class Artists_Controller
                     </script>";
           }
      }
+
+    /* --------------------------------------------------------------------------------------------
+     * API controller functions
+     * ------------------------------------------------------------------------------------------*/
+
+    /**
+     * Handles a GET request
+     */
+    function processGet($routes)
+    {
+        // If an ID was provided, get that artist
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            $id = $routes[1];
+
+            return json_encode(Artist::getArtistById($id));
+        }
+        // Otherwise get all artists
+        else
+        {
+            return json_encode(Artist::getArtistsList());
+        }
+    }
+
+    /**
+     * Handles a POST request
+     */
+    function processPost($input)
+    {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'POST';
+        $reqStatus->id_affected = -1;
+
+        //Make sure a name was provided for the new artist
+        if (isset($input["name"]) && count($input) == 1)
+        {
+            $name = $input["name"];
+
+            $newId = Artist::addArtist($name);
+
+            // The new ID will be -1 if there was an error adding the new artist (duplicate name)
+            if ($newId < 0)
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'An artist with that name already exists.';
+            }
+            else
+            {
+                $reqStatus->status = 'Success';
+                $reqStatus->comment = 'Artist ' . $newId . ' successfully added.';
+                $reqStatus->id_affected = $newId;
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Only a name is expected when creating a new artist';
+        }
+
+        return json_encode($reqStatus);
+    }
+
+    /**
+     * Handles a PUT request
+     */
+    function processPut($routes, $input)
+    {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'PUT';
+        $reqStatus->id_affected = -1;
+
+        // Make sure an ID was provided
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            //Then make sure a new name was provided for the artist
+            if (isset($input["new_name"]) && count($input) == 1)
+            {
+                // Grab the new name and artist ID provided
+                $newName = $input["new_name"];
+                $id = $routes[1];
+                $reqStatus->id_affected = $id;
+
+                // Try to update the artist's name
+                $succ = Artist::updateArtistName($id, $newName);
+
+                if ($succ)
+                {
+                    $reqStatus->status = 'Success';
+                    $reqStatus->comment = 'Name updated for artist '. $id;
+                }
+                else
+                {
+                    $reqStatus->status = 'Failure';
+                    $reqStatus->comment = 'Could not update the name for artist ' . $id;
+                }
+            }
+            else
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Only a new_name is expected when updating an artist';
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Must provide an ID for the artist you wish to update.';
+        }
+
+        return json_encode($reqStatus);
+    }
+
+    /**
+     * Handles a DELETE request
+     */
+    function processDelete($routes)
+    {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'DELETE';
+        $reqStatus->id_affected = -1;
+
+        // Make sure an id was provided
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            $id = $routes[1];
+
+            $success = Artist::deleteArtist($id);
+
+            $reqStatus->id_affected = $id;
+
+            if ($success)
+            {
+                $reqStatus->status = 'Success';
+                $reqStatus->comment = 'Artist ' . $id . ' successfully deleted.';
+            }
+            else
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Failed to delete artist with id ' . $id;
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Must provide an artist ID to delete.';
+        }
+
+        return json_encode($reqStatus);
+    }
+
+    /**
+     * Processes an API query
+     *
+     * @param[in] routes  The URI route, broken into an array
+     * @param[in] method  HTTP method
+     * @param[in] input   Any potential input parameters
+     */
+    function processQuery($routes, $method, $input)
+    {
+        switch($method)
+        {
+            case 'GET':
+                return $this->processGet($routes);
+                break;
+
+            case 'POST':
+                return $this->processPost($input);
+                break;
+
+            case 'PUT':
+                return $this->processPut($routes, $input);
+                break;
+
+            case 'DELETE':
+                return $this->processDelete($routes);
+                break;
+
+            default:
+                $reqStatus = new RequestStatus();
+                $reqStatus->action = $method;
+                $reqStatus->id_affected = -1;
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Requested HTTP method not supported';
+
+                return json_encode($reqStatus);
+        }
+    }
 }
 
 
