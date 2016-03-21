@@ -278,7 +278,6 @@ class Artists_Controller
                 // Grab the new name and artist ID provided
                 $newName = $input["new_name"];
                 $id = $routes[1];
-                $reqStatus->id_affected = $id;
 
                 // Try to update the artist's name
                 $succ = Artist::updateArtistName($id, $newName);
@@ -287,6 +286,7 @@ class Artists_Controller
                 {
                     $reqStatus->status = 'Success';
                     $reqStatus->comment = 'Name updated for artist '. $id;
+                    $reqStatus->id_affected = $id;
                 }
                 else
                 {
@@ -325,12 +325,11 @@ class Artists_Controller
 
             $success = Artist::deleteArtist($id);
 
-            $reqStatus->id_affected = $id;
-
             if ($success)
             {
                 $reqStatus->status = 'Success';
                 $reqStatus->comment = 'Artist ' . $id . ' successfully deleted.';
+                $reqStatus->id_affected = $id;
             }
             else
             {

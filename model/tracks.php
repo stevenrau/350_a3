@@ -31,10 +31,17 @@
 
                // insert the new track info
                $sql = 'INSERT INTO tracks(title, artist_id, album_id) VALUES (\'' . $title . '\', ' .            $artistId . ', ' . $albumId . ')';
-               $db->query($sql);
+               $succ = $db->query($sql);
 
-               // Return the newly added ID
-               return $db->insert_id;
+              $newId = $db->insert_id;
+
+              // Return the newly added ID or -1 if something went wrong
+              if (!$succ)
+              {
+                  $newId = -1;
+              }
+
+               return $newId;
           }
 
            /*
@@ -67,6 +74,12 @@
                $sql = 'DELETE FROM tracks WHERE id=' . $trackId;
 
                $succ = $db->query($sql);
+
+              // If nothing was done, that means the ID does not exist in the DB
+              if (mysqli_affected_rows($db) == 0)
+              {
+                  return False;
+              }
 
                return $succ;
           }
@@ -106,6 +119,12 @@
                $sql = 'UPDATE tracks SET title=\'' . $newTrackTitle . '\' WHERE id=' . $trackId;
 
                $succ = $db->query($sql);
+
+              // If nothing was done, that means the ID does not exist in the DB
+              if (mysqli_affected_rows($db) == 0)
+              {
+                  return False;
+              }
 
                return $succ;
           }

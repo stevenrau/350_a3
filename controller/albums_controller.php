@@ -289,7 +289,6 @@ class Albums_Controller
                 // Grab the new title and album ID provided
                 $newTitle = $input["new_title"];
                 $id = $routes[1];
-                $reqStatus->id_affected = $id;
 
                 // Try to update the albums's name
                 $succ = Album::updateAlbumTitle($id, $newTitle);
@@ -298,6 +297,7 @@ class Albums_Controller
                 {
                     $reqStatus->status = 'Success';
                     $reqStatus->comment = 'Title updated for album '. $id;
+                    $reqStatus->id_affected = $id;
                 }
                 else
                 {
@@ -325,7 +325,36 @@ class Albums_Controller
      */
     function processDelete($routes)
     {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'DELETE';
+        $reqStatus->id_affected = -1;
 
+        // Make sure an id was provided
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            $id = $routes[1];
+
+            $success = Album::deleteAlbum($id);
+
+            if ($success)
+            {
+                $reqStatus->status = 'Success';
+                $reqStatus->comment = 'Album ' . $id . ' successfully deleted.';
+                $reqStatus->id_affected = $id;
+            }
+            else
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Failed to delete album with id ' . $id;
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Must provide an album ID to delete.';
+        }
+
+        return json_encode($reqStatus);
     }
 
     /**

@@ -167,7 +167,56 @@ class Tracks_Controller
      */
     function processPost($input)
     {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'POST';
+        $reqStatus->id_affected = -1;
 
+        //Make sure a title, artist, and album were provided for the new track
+        if (isset($input["title"]) && isset($input["artist"]) &&
+            isset($input["album"]) && count($input) == 3)
+        {
+            $title = $input["title"];
+            $artist = $input["artist"];
+            $album = $input["album"];
+
+            // First, check if the artist exists. If not, make a new entry
+            $artistId = Artist::getArtistId($artist);
+            if ($artistId < 0)
+            {
+                $artistId = Artist::addArtist($artist);
+            }
+
+            // Then check if the album exists. If not, make a new entry with the artist
+            // ID just retrieved
+            $albumId = Album::getAlbumId($album);
+            if ($albumId < 0)
+            {
+                $albumId = Album::addAlbum($album, $artistId);
+            }
+
+            // Then add the track
+            $newId = Track::addTrack($title, $artistId, $albumId);
+
+            // The new ID will be -1 if there was an error adding the new track
+            if ($newId <= 0)
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Failed to create the new track.';
+            }
+            else
+            {
+                $reqStatus->status = 'Success';
+                $reqStatus->comment = 'Track ' . $newId . ' successfully added.';
+                $reqStatus->id_affected = $newId;
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Expects a title, artist name, and album name when creating a new track';
+        }
+
+        return json_encode($reqStatus);
     }
 
     /**
@@ -175,7 +224,48 @@ class Tracks_Controller
      */
     function processPut($routes, $input)
     {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'PUT';
+        $reqStatus->id_affected = -1;
 
+        // Make sure an ID was provided
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            //Then make sure a new title was provided for the track
+            if (isset($input["new_title"]) && count($input) == 1)
+            {
+                // Grab the new title and track ID provided
+                $newTitle = $input["new_title"];
+                $id = $routes[1];
+
+                // Try to update the track's title
+                $succ = Track::updateTrackTitle($id, $newTitle);
+
+                if ($succ)
+                {
+                    $reqStatus->status = 'Success';
+                    $reqStatus->comment = 'Title updated for track '. $id;
+                    $reqStatus->id_affected = $id;
+                }
+                else
+                {
+                    $reqStatus->status = 'Failure';
+                    $reqStatus->comment = 'Could not update the title for track ' . $id;
+                }
+            }
+            else
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Only a new_title is expected when updating an track';
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Must provide an ID for the track you wish to update.';
+        }
+
+        return json_encode($reqStatus);
     }
 
     /**
@@ -183,7 +273,36 @@ class Tracks_Controller
      */
     function processDelete($routes)
     {
+        $reqStatus = new RequestStatus();
+        $reqStatus->action = 'DELETE';
+        $reqStatus->id_affected = -1;
 
+        // Make sure an id was provided
+        if (count($routes) > 1 && preg_match('/[0-9]*/',$routes[1]))
+        {
+            $id = $routes[1];
+
+            $success = Track::deleteTrack($id);
+
+            if ($success)
+            {
+                $reqStatus->status = 'Success';
+                $reqStatus->comment = 'Track ' . $id . ' successfully deleted.';
+                $reqStatus->id_affected = $id;
+            }
+            else
+            {
+                $reqStatus->status = 'Failure';
+                $reqStatus->comment = 'Failed to delete track with id ' . $id;
+            }
+        }
+        else
+        {
+            $reqStatus->status = 'Failure';
+            $reqStatus->comment = 'Must provide a track ID to delete.';
+        }
+
+        return json_encode($reqStatus);
     }
 
     /**

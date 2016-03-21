@@ -31,14 +31,14 @@
 
                // insert the new album info
                $sql = 'INSERT INTO albums(title, artist_id) VALUES (\'' . $title . '\', ' . $artistId . ')';
-               $db->query($sql);
+               $succ = $db->query($sql);
 
                $newId = $db->insert_id;
 
                // Return the newly added ID or -1 if something went wrong
-               if ($newId <= 0)
+               if (!$succ)
                {
-                   return -1;
+                  $newId = -1;
                }
 
                return $newId;
